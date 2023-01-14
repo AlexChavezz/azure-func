@@ -11,10 +11,10 @@ module.exports = async function (context, req) {
         if(validateFields(requestParams))
         {
             await client.connect();
-            console.log('Connected to mongoDB')
+            console.log('Connected to mongoDB');
             await messagesConnection.insertOne(requestParams);
             await client.close();
-            console.log('Connection closed')
+            console.log('Connection closed');
         }
 
         context.res = {
