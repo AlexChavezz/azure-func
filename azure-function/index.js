@@ -1,14 +1,51 @@
+const { MongoClient } = require("mongodb");
+const client = new MongoClient(process.env['CONNECTION_STRING']);
+const messagesConnection = client.db('portfolio').collection('messages');
+
 module.exports = async function (context, req) {
-    context.log('JavaScript HTTP trigger function processed a request.');
+   
+    // -> [post]
+    const requestParams = req.body;
+    try
+    {
+        if(validateFields(requestParams))
+        {
+            await client.connect();
+            console.log('Connected to mongoDB')
+            await messagesConnection.insertOne(requestParams);
+            await client.close();
+            console.log('Connection closed')
+        }
 
-    const name = (req.query.name || (req.body && req.body.name));
-    const responseMessage = name
-        ? "Hello, " + name + ". This HTTP triggered function executed successfully."
-        : "This HTTP triggered function executed successfully. Pass a name in the query string or in the request body for a personalized response.";
+        context.res = {
+            body: {ok: true, message:"Message sent successfully"},
+            contentType: 'application/json'
+        };
+    }
+    catch(error)
+    {
+        console.log(error)
+        context.res = {
+            status: 500
+        };
+    }
+}
 
-    context.res = {
-        // status: 200, /* Defaults to 200 */
-        
-        body: responseMessage
-    };
+
+function validateFields({email, name, message})
+{
+    const emailRegEx = new RegExp('^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$');
+    if(!emailRegEx.test(email))
+    {
+        return false;
+    }
+    if(name.trim().length === 0)
+    {
+        return false;
+    }
+    if(message.trim().length === 0)
+    {
+        return false;
+    }
+    return true;
 }
