@@ -1,38 +1,34 @@
 const client = require("../db/client");
-
 const messagesConnection = client.db('portfolio').collection('messages');
+const usersConnection = client.db('portfolio').collection('users');
 
 module.exports = async function (context, req) {
-   
-    try
-    {
-        await getConnection();
-        const data = await messagesConnection.find({}).toArray();
-        context.res ={
-            status: 200,
-            body: data
+    const { userName, password } = req.body;
+    try {
+        await client.connect();
+
+        const results = await Promise.all([
+            usersConnection.findOne({ name: userName, password }),
+            messagesConnection.find({}).toArray()
+        ])
+        console.log(results)
+        if (!results[0]) {
+            return context.res = {
+                status: 401,
+                body: { "message": "You're not authorized to view this content" }
+            }
         }
-        await closeConnection();
+        context.res = {
+            status: 200,
+            body: results
+        }
     }
-    catch(error)
-    {
+    catch (error) {
         context.res = {
             status: 500
-        };
+        }
     }
-
-}
-
-
-async function getConnection()
-{
-    await client.connect();
-    console.log('Connected to mongoDB');
-    return client.db('portfolio').collection('messages');
-}
-
-async function closeConnection()
-{
-    await client.close();
-    console.log('Connection closed');
+    finally {
+        await client.close();
+    }
 }
