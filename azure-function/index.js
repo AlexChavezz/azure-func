@@ -1,9 +1,7 @@
-const { MongoClient } = require("mongodb");
-const client = new MongoClient(process.env['CONNECTION_STRING']);
-const messagesConnection = client.db('portfolio').collection('messages');
+const client = require("../db/client");
 
+const messagesConnection = client.db('portfolio').collection('messages');
 module.exports = async function (context, req) {
-   
     // -> [post]
     const requestParams = req.body;
     try
