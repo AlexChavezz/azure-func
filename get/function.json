@@ -8,7 +8,7 @@
         "methods": [
           "post"
         ],
-        "route": "get-all/:name/:password"
+        "route": "get-all"
       },
       {
         "type": "http",
